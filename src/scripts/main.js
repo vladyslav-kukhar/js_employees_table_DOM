@@ -14,7 +14,6 @@ tableTh.forEach((th, index) => {
     const trArr = [...bodyTr];
 
     if (index !== lastClickedindex) {
-      isFirstState = false;
       lastClickedindex = index;
 
       trArr.sort((rowA, rowB) => {
@@ -46,10 +45,10 @@ tableTh.forEach((th, index) => {
           );
 
           if (!isNaN(numA) && !isNaN(numB)) {
-            return numA - numB;
+            return numB - numA;
           }
 
-          return textA.localeCompare(textB);
+          return textB.localeCompare(textA);
         });
 
         tbody.append(...trArr);
@@ -68,10 +67,10 @@ tableTh.forEach((th, index) => {
           );
 
           if (!isNaN(numA) && !isNaN(numB)) {
-            return numB - numA;
+            return numA - numB;
           }
 
-          return textB.localeCompare(textA);
+          return textA.localeCompare(textB);
         });
 
         tbody.append(...trArr);

@@ -6,13 +6,17 @@ const tableTh = table.querySelectorAll('th');
 const tbody = table.querySelector('tbody');
 
 let isFirstState = true;
+let lastClickedindex = null;
 
 tableTh.forEach((th, index) => {
   th.addEventListener('click', () => {
     const bodyTr = document.querySelectorAll('tbody tr');
     const trArr = [...bodyTr];
 
-    if (isFirstState) {
+    if (index !== lastClickedindex) {
+      isFirstState = false;
+      lastClickedindex = index;
+
       trArr.sort((rowA, rowB) => {
         const textA = rowA.children[index].textContent;
         const textB = rowB.children[index].textContent;
@@ -28,42 +32,70 @@ tableTh.forEach((th, index) => {
       });
 
       tbody.append(...trArr);
-
-      isFirstState = false;
     } else {
-      trArr.sort((rowA, rowB) => {
-        const textA = rowA.children[index].textContent;
-        const textB = rowB.children[index].textContent;
+      if (isFirstState) {
+        trArr.sort((rowA, rowB) => {
+          const textA = rowA.children[index].textContent;
+          const textB = rowB.children[index].textContent;
 
-        const numA = parseFloat(textA.replaceAll('$', '').replaceAll(',', '.'));
-        const numB = parseFloat(textB.replaceAll('$', '').replaceAll(',', '.'));
+          const numA = parseFloat(
+            textA.replaceAll('$', '').replaceAll(',', '.'),
+          );
+          const numB = parseFloat(
+            textB.replaceAll('$', '').replaceAll(',', '.'),
+          );
 
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return numB - numA;
-        }
+          if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+          }
 
-        return textB.localeCompare(textA);
-      });
+          return textA.localeCompare(textB);
+        });
 
-      tbody.append(...trArr);
+        tbody.append(...trArr);
 
-      isFirstState = true;
+        isFirstState = false;
+      } else {
+        trArr.sort((rowA, rowB) => {
+          const textA = rowA.children[index].textContent;
+          const textB = rowB.children[index].textContent;
+
+          const numA = parseFloat(
+            textA.replaceAll('$', '').replaceAll(',', '.'),
+          );
+          const numB = parseFloat(
+            textB.replaceAll('$', '').replaceAll(',', '.'),
+          );
+
+          if (!isNaN(numA) && !isNaN(numB)) {
+            return numB - numA;
+          }
+
+          return textB.localeCompare(textA);
+        });
+
+        tbody.append(...trArr);
+
+        isFirstState = true;
+      }
     }
   });
 });
 
-const tbodyTr = tbody.querySelectorAll('tr');
+tbody.addEventListener('click', (evt) => {
+  const clickedRow = evt.target.closest('tr');
 
-tbodyTr.forEach((tr) => {
-  tr.addEventListener('click', () => {
-    const currentActive = document.querySelector('tr.active');
+  if (!clickedRow) {
+    return;
+  }
 
-    if (currentActive) {
-      currentActive.classList.remove('active');
-    }
+  const currentActive = document.querySelector('tr.active');
 
-    tr.classList.add('active');
-  });
+  if (currentActive) {
+    currentActive.classList.remove('active');
+  }
+
+  clickedRow.classList.add('active');
 });
 
 tbody.addEventListener('dblclick', (e) => {
@@ -187,7 +219,7 @@ form.append(officeLabel);
 
 const ageLabel = createElement('label', '', { textContent: 'Age:' });
 const ageInput = createElement('input', '', {
-  type: 'text',
+  type: 'number',
   name: 'age',
   required: true,
 });
@@ -198,7 +230,7 @@ form.append(ageLabel);
 
 const salLabel = createElement('label', '', { textContent: 'Salary:' });
 const salInput = createElement('input', '', {
-  type: 'text',
+  type: 'number',
   name: 'salary',
   required: true,
 });
@@ -222,7 +254,8 @@ form.addEventListener('submit', (e) => {
   const office = formData.get('office');
   const age = formData.get('age');
   const salary = formData.get('salary');
-  const formatSalary = Number(salary).toLocaleString('en-US', {
+  const cleanSalary = parseFloat(salary.replace(/[^0-9.-]/g, ''));
+  const formatSalary = cleanSalary.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
@@ -252,7 +285,7 @@ form.addEventListener('submit', (e) => {
     return;
   }
 
-  if (Number(age) < 18 || Number(age) > 90) {
+  if (age < 18 || age > 90) {
     pushNotification(
       10,
       10,
